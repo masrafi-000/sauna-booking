@@ -71,6 +71,11 @@ function sb_boot()
     SB_Accommodation_Ajax::init();
     SB_Accommodation_Admin::init();
     SB_Webhooks::init();
+
+    // Ensure database tables exist
+    if (get_option('sb_acc_db_version') !== SB_DB_VER) {
+        SB_Accommodation_Database::install();
+    }
 }
 
 add_action('init', 'sb_maybe_flush', 99);

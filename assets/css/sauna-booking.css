@@ -444,10 +444,17 @@ body.sb-dark-page .entry-content {
     box-shadow var(--sb-tr) !important;
   box-shadow: 0 4px 16px rgba(28, 74, 62, 0.25) !important;
 }
-.sb-select-time-btn:hover {
+.sb-select-time-btn:hover:not(:disabled) {
   background: var(--sb-amber) !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 8px 24px rgba(197, 153, 90, 0.35) !important;
+}
+.sb-select-time-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  background: var(--sb-text-faint) !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Meta */

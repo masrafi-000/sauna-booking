@@ -185,7 +185,7 @@ while (have_posts()) : the_post();
                 <div class="sb-slots-date-label" id="sbAccDateRangeLabel">Please select a check-in date</div>
                 <div class="sb-slots-list">
                     <div id="sb-range-summary" style="margin-bottom:20px;"></div>
-                    <button class="sb-select-time-btn" id="sbConfirmDates" style="display:none;">Confirm Dates</button>
+                    <button class="sb-select-time-btn" id="sbConfirmDates" disabled>Confirm Dates</button>
                 </div>
             </div>
         </div>
@@ -463,18 +463,18 @@ function updateSelectionUI() {
 
     if(!checkIn) {
         label.innerText = 'Please select a check-in date';
-        btn.style.display = 'none';
+        btn.disabled = true;
         summary.innerHTML = '';
     } else if(!checkOut) {
         label.innerText = 'Select check-out date';
-        btn.style.display = 'none';
+        btn.disabled = true;
         summary.innerHTML = `<div class="sb-meta-item">Check-in: <strong>${checkIn}</strong></div>`;
     } else {
         const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
         label.innerText = 'Dates Selected';
-        btn.style.display = 'block';
+        btn.disabled = false;
         summary.innerHTML = `
-            <div style="background:var(--sb-bg-subtle); padding:15px; border-radius:12px; border:1fr solid var(--sb-border);">
+            <div style="background:var(--sb-bg-subtle); padding:15px; border-radius:12px; border:1px solid var(--sb-border);">
                 <div class="sb-meta-item">Check-in: <strong>${checkIn}</strong></div>
                 <div class="sb-meta-item">Check-out: <strong>${checkOut}</strong></div>
                 <div class="sb-meta-item">Duration: <strong>${nights} nights</strong></div>
@@ -504,8 +504,15 @@ function updateBookingSummary() {
 }
 
 function initStripe() {
-    if (stripe) return;
-    stripe = Stripe('<?php echo get_option('sb_stripe_public_key'); ?>');
+    if (card) return; // Already initialized
+    
+    const pubKey = '<?php echo get_option('sb_stripe_publishable_key'); ?>';
+    if(!pubKey) {
+        console.error('Stripe Publishable Key missing');
+        return;
+    }
+
+    stripe = Stripe(pubKey);
     elements = stripe.elements();
     card = elements.create('card', { 
         style: { 
@@ -516,6 +523,15 @@ function initStripe() {
         } 
     });
     card.mount('#acc-card-element');
+
+    card.on('change', (event) => {
+        const displayError = document.getElementById('acc-card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
 }
 
 async function processBooking() {
@@ -524,9 +540,15 @@ async function processBooking() {
     const text = document.getElementById('sbPayBtnText');
     const spinner = document.getElementById('sbPayBtnSpinner');
 
+    if (!card) {
+        err.innerText = 'Payment system not initialized.';
+        return;
+    }
+
     btn.disabled = true;
     text.style.display = 'none';
     spinner.style.display = 'inline-block';
+    err.innerText = '';
 
     const fd = new FormData(document.getElementById('sb-accommodation-booking-form'));
     fd.append('action', 'acc_create_payment_intent');
@@ -537,11 +559,8 @@ async function processBooking() {
         const data = await res.json();
 
         if (!data.success) {
-            err.innerText = data.data.message;
-            btn.disabled = false;
-            text.style.display = 'inline';
-            spinner.style.display = 'none';
-            return;
+            err.innerText = data.data.message || 'Error initializing payment.';
+            throw new Error(data.data.message);
         }
 
         const { paymentIntent, error } = await stripe.confirmCardPayment(data.data.client_secret, {
@@ -550,23 +569,30 @@ async function processBooking() {
 
         if (error) {
             err.innerText = error.message;
-            btn.disabled = false;
-            text.style.display = 'inline';
-            spinner.style.display = 'none';
+            throw error;
         } else {
-            await fetch(ajaxurl, {
+            const finalFd = new FormData();
+            finalFd.append('action', 'acc_confirm_booking');
+            finalFd.append('nonce', '<?php echo wp_create_nonce('acc_nonce'); ?>');
+            finalFd.append('booking_id', data.data.booking_id);
+            finalFd.append('pi_id', paymentIntent.id);
+
+            const confirmRes = await fetch(ajaxurl, {
                 method: 'POST',
-                body: new URLSearchParams({
-                    action: 'acc_confirm_booking',
-                    nonce: '<?php echo wp_create_nonce('acc_nonce'); ?>',
-                    booking_id: data.data.booking_id,
-                    pi_id: data.data.payment_intent
-                })
+                body: finalFd
             });
-            alert('Your booking is confirmed! Redirecting...');
-            window.location.reload();
+            const confirmData = await confirmRes.json();
+            
+            if (confirmData.success) {
+                alert(confirmData.data.message || 'Your booking is confirmed! Redirecting...');
+                window.location.href = confirmData.data.redirect_to || window.location.href;
+            } else {
+                err.innerText = confirmData.data.message || 'Confirmation failed.';
+                throw new Error(confirmData.data.message);
+            }
         }
     } catch(e) {
+        console.error('Booking error:', e);
         btn.disabled = false;
         text.style.display = 'inline';
         spinner.style.display = 'none';

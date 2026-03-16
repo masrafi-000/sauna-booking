@@ -113,8 +113,9 @@ class SB_Accommodation_Ajax
             wp_send_json_error(['message' => 'Missing required booking data.']);
         }
 
-        if ($occupants < 1 || $occupants > 2) {
-            wp_send_json_error(['message' => 'Invalid number of occupants.']);
+        $max_allowed = intval(get_post_meta($room_id, '_sb_max_occupants', true) ?: 2);
+        if ($occupants < 1 || $occupants > $max_allowed) {
+            wp_send_json_error(['message' => sprintf('Invalid number of occupants. Maximum allowed: %d', $max_allowed)]);
         }
 
         // Verify dates again
@@ -219,6 +220,10 @@ class SB_Accommodation_Ajax
             'booking_status' => 'pending',
         ]);
 
+        if (! $booking_id) {
+            wp_send_json_error(['message' => 'Failed to create booking record in database.'], 500);
+        }
+
         wp_send_json_success([
             'client_secret'  => $body['client_secret'],
             'payment_intent' => $body['id'],
@@ -271,9 +276,9 @@ class SB_Accommodation_Ajax
         );
 
         wp_send_json_success([
-            'message'     => 'Booking confirmed!',
+            'status'      => 'confirmed',
+            'message'     => 'Booking confirmed! Check your email for details.',
             'booking_id'  => $booking_id,
-            'redirect_to' => home_url('/thank-you/'),
         ]);
     }
 }

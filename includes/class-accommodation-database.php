@@ -97,7 +97,7 @@ class SB_Accommodation_Database
         global $wpdb;
         $table = self::get_table();
 
-        $wpdb->insert($table, [
+        $result = $wpdb->insert($table, [
             'room_type_id'   => absint($data['room_type_id']),
             'check_in_date'  => sanitize_text_field($data['check_in_date']),
             'check_out_date' => sanitize_text_field($data['check_out_date']),
@@ -111,19 +111,13 @@ class SB_Accommodation_Database
             'booking_status' => sanitize_text_field($data['booking_status'] ?? 'pending'),
             'notes'          => sanitize_textarea_field($data['notes'] ?? ''),
         ], [
-            '%d',
-            '%s',
-            '%s',
-            '%d',
-            '%s',
-            '%s',
-            '%s',
-            '%f',
-            '%s',
-            '%s',
-            '%s',
-            '%s'
+            '%d', '%s', '%s', '%d', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s'
         ]);
+
+        if ($result === false) {
+            error_log('Accommodation Booking DB Error: ' . $wpdb->last_error);
+            return 0;
+        }
 
         return $wpdb->insert_id;
     }

@@ -35,6 +35,18 @@ class SB_Accommodation_Admin
             return;
         }
 
+        // Handle status updates
+        if (isset($_GET['action']) && isset($_GET['booking_id']) && isset($_GET['_wpnonce'])) {
+            if (wp_verify_nonce($_GET['_wpnonce'], 'acc_admin_action')) {
+                $b_id = absint($_GET['booking_id']);
+                $new_status = sanitize_text_field($_GET['action']);
+                if (in_array($new_status, ['confirmed', 'cancelled', 'pending'])) {
+                    SB_Accommodation_Database::update_booking_status($b_id, $new_status);
+                    echo '<div class="notice notice-success is-dismissible"><p>Booking status updated to ' . esc_html($new_status) . '.</p></div>';
+                }
+            }
+        }
+
         $paged    = max(1, intval($_GET['paged'] ?? 1));
         $per_page = 20;
 
@@ -82,8 +94,14 @@ class SB_Accommodation_Admin
                                         <?php echo esc_html(ucfirst($booking['booking_status'])); ?>
                                     </span>
                                 </td>
-                                <td>
-                                    <a href="?page=accommodation_bookings&view=<?php echo $booking['id']; ?>" class="button button-small">View Details</a>
+                                 <td>
+                                    <a href="<?php echo admin_url('edit.php?post_type=accommodation_room&page=accommodation_bookings&view=' . $booking['id']); ?>" class="button button-small">Details</a>
+                                    <?php if ($booking['booking_status'] !== 'confirmed') : ?>
+                                        <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=confirmed&booking_id=" . $booking['id']), 'acc_admin_action'); ?>" class="button button-small button-primary">Approve</a>
+                                    <?php endif; ?>
+                                    <?php if ($booking['booking_status'] !== 'cancelled') : ?>
+                                        <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=cancelled&booking_id=" . $booking['id']), 'acc_admin_action'); ?>" class="button button-small" onclick="return confirm('Cancel this booking?')">Cancel</a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -95,7 +113,7 @@ class SB_Accommodation_Admin
                         <div class="tablenav-pages">
                             <?php
                             echo paginate_links([
-                                'base'      => add_query_arg('paged', '%#%'),
+                                'base'      => add_query_arg(['post_type' => 'accommodation_room', 'page' => 'accommodation_bookings', 'paged' => '%#%'], admin_url('edit.php')),
                                 'format'    => '',
                                 'current'   => $paged,
                                 'total'     => $pages,
@@ -131,7 +149,7 @@ class SB_Accommodation_Admin
         $room_title = get_the_title($booking->room_type_id);
 ?>
         <div class="wrap">
-            <a href="?page=accommodation_bookings" class="button" style="margin-bottom:20px;">&larr; Back to Bookings</a>
+            <a href="<?php echo admin_url('edit.php?post_type=accommodation_room&page=accommodation_bookings'); ?>" class="button" style="margin-bottom:20px;">&larr; Back to Bookings</a>
             <h1>Booking Details #<?php echo $booking->id; ?></h1>
 
             <div class="sb-booking-details-grid">
@@ -156,6 +174,14 @@ class SB_Accommodation_Admin
                     <p><strong>Total Amount:</strong> <?php echo esc_html(get_option('sb_currency_symbol', '€') . number_format($booking->total_amount, 2)); ?></p>
                     <p><strong>Stripe PI:</strong> <code><?php echo esc_html($booking->stripe_pi_id ?: 'N/A'); ?></code></p>
                     <p><strong>Created:</strong> <?php echo date('Y-m-d H:i', strtotime($booking->created_at)); ?></p>
+                    <div style="margin-top:20px; display:flex; gap:10px;">
+                        <?php if ($booking->booking_status !== 'confirmed') : ?>
+                            <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=confirmed&booking_id=" . $booking->id), 'acc_admin_action'); ?>" class="button button-primary button-large">Approve Booking</a>
+                        <?php endif; ?>
+                        <?php if ($booking->booking_status !== 'cancelled') : ?>
+                            <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=cancelled&booking_id=" . $booking->id), 'acc_admin_action'); ?>" class="button button-large" onclick="return confirm('Cancel this booking?')">Cancel Booking</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
