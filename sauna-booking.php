@@ -16,6 +16,9 @@ define('SB_PATH',     plugin_dir_path(__FILE__));
 define('SB_URL',      plugin_dir_url(__FILE__));
 define('SB_DB_VER',   '1.0');
 
+// Trigger a one-time flush for new CPT permalinks
+update_option('sb_flush_needed', true);
+
 /* ── Autoload includes ─────────────────────────────────────────────────────── */
 // Sauna Booking
 require_once SB_PATH . 'includes/class-post-type.php';
@@ -31,6 +34,7 @@ require_once SB_PATH . 'includes/class-accommodation-database.php';
 require_once SB_PATH . 'includes/class-accommodation-shortcode.php';
 require_once SB_PATH . 'includes/class-accommodation-ajax.php';
 require_once SB_PATH . 'includes/class-accommodation-admin.php';
+require_once SB_PATH . 'includes/class-webhooks.php';
 
 /* ── Activation ─────────────────────────────────────────────────────────────── */
 register_activation_hook(__FILE__, 'sb_activate');
@@ -66,6 +70,7 @@ function sb_boot()
     SB_Accommodation_Shortcode::init();
     SB_Accommodation_Ajax::init();
     SB_Accommodation_Admin::init();
+    SB_Webhooks::init();
 }
 
 add_action('init', 'sb_maybe_flush', 99);

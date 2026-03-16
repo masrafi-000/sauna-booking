@@ -1335,3 +1335,55 @@ body.sb-overflow-hidden {
 }
 
 /* faq new css */
+
+/* ════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS OVERRIDES
+════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .sb-single-product {
+    grid-template-columns: 1fr !important;
+    padding: 0 16px !important;
+    gap: 24px !important;
+  }
+  .sb-detail-title {
+    font-size: 28px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .sb-popup-body {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  .sb-popup {
+    padding: 20px 16px !important;
+    margin: 10px !important;
+    max-width: calc(100% - 20px) !important;
+  }
+  .sb-cal-grid {
+    padding: 10px 0 !important;
+  }
+  .sb-cal-days span, .sb-cal-day {
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 13px !important;
+  }
+  .sb-slots-panel {
+    border-left: none !important;
+    border-top: 1px solid var(--sb-border) !important;
+    padding-top: 15px !important;
+  }
+  .sb-form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .sb-detail-title {
+    font-size: 24px !important;
+  }
+}
+
+/* Fix for horizontal scroll issues */
+.sb-page-wrap {
+  overflow-x: hidden !important;
+}

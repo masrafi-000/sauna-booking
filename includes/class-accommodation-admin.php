@@ -29,77 +29,144 @@ class SB_Accommodation_Admin
      */
     public static function render_bookings_page()
     {
+        $view = isset($_GET['view']) ? absint($_GET['view']) : 0;
+        if ($view) {
+            self::render_single_booking($view);
+            return;
+        }
+
+        $paged    = max(1, intval($_GET['paged'] ?? 1));
+        $per_page = 20;
+
+        $bookings = SB_Accommodation_Database::get_all_bookings(['per_page' => $per_page, 'page' => $paged]);
+        $total    = SB_Accommodation_Database::get_booking_count();
+        $pages    = ceil($total / $per_page);
 ?>
         <div class="wrap">
-            <h1>Accommodation Bookings</h1>
+            <h1 class="wp-heading-inline">Accommodation Bookings</h1>
+            <hr class="wp-header-end">
+            <p>Total: <?php echo $total; ?> booking(s)</p>
 
-            <?php
-            $bookings = SB_Accommodation_Database::get_all_bookings(100);
+            <?php if (empty($bookings)) : ?>
+                <p>No bookings found.</p>
+            <?php else : ?>
 
-            if (empty($bookings)) {
-                echo '<p>No bookings found.</p>';
-                return;
-            }
-            ?>
-
-            <table class="widefat striped">
-                <thead>
-                    <tr>
-                        <th>Booking ID</th>
-                        <th>Guest Name</th>
-                        <th>Guest Email</th>
-                        <th>Room</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Guests</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($bookings as $booking) : ?>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
                         <tr>
-                            <td><strong><?php echo esc_html($booking['id']); ?></strong></td>
-                            <td><?php echo esc_html($booking['guest_name']); ?></td>
-                            <td><?php echo esc_html($booking['guest_email']); ?></td>
-                            <td><?php echo esc_html(get_the_title($booking['room_type_id'])); ?></td>
-                            <td><?php echo esc_html($booking['check_in_date']); ?></td>
-                            <td><?php echo esc_html($booking['check_out_date']); ?></td>
-                            <td><?php echo intval($booking['occupant_count']); ?></td>
-                            <td><?php echo esc_html(get_option('sb_currency_symbol', '€') . number_format($booking['total_amount'], 2)); ?></td>
-                            <td>
-                                <span class="status-<?php echo esc_attr($booking['booking_status']); ?>">
-                                    <?php echo esc_html(ucfirst($booking['booking_status'])); ?>
-                                </span>
-                            </td>
-                            <td><?php echo esc_html(date('Y-m-d H:i', strtotime($booking['created_at']))); ?></td>
+                            <th style="width:50px;">ID</th>
+                            <th>Guest</th>
+                            <th>Room</th>
+                            <th>Dates</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($bookings as $booking) : ?>
+                            <tr>
+                                <td><strong>#<?php echo esc_html($booking['id']); ?></strong></td>
+                                <td>
+                                    <strong><?php echo esc_html($booking['guest_name']); ?></strong><br>
+                                    <span style="font-size:11px;color:#666;"><?php echo esc_html($booking['guest_email']); ?></span>
+                                </td>
+                                <td><?php echo esc_html(get_the_title($booking['room_type_id'])); ?></td>
+                                <td>
+                                    <?php echo date('M j', strtotime($booking['check_in_date'])); ?> - 
+                                    <?php echo date('M j, Y', strtotime($booking['check_out_date'])); ?>
+                                </td>
+                                <td><?php echo esc_html(get_option('sb_currency_symbol', '€') . number_format($booking['total_amount'], 2)); ?></td>
+                                <td>
+                                    <span class="sb-status-badge status-<?php echo esc_attr($booking['booking_status']); ?>">
+                                        <?php echo esc_html(ucfirst($booking['booking_status'])); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="?page=accommodation_bookings&view=<?php echo $booking['id']; ?>" class="button button-small">View Details</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+                <?php if ($pages > 1) : ?>
+                    <div class="tablenav bottom">
+                        <div class="tablenav-pages">
+                            <?php
+                            echo paginate_links([
+                                'base'      => add_query_arg('paged', '%#%'),
+                                'format'    => '',
+                                'current'   => $paged,
+                                'total'     => $pages,
+                                'prev_text' => '&laquo;',
+                                'next_text' => '&raquo;',
+                            ]);
+                            ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+            <?php endif; ?>
 
             <style>
-                .status-pending {
-                    color: #856404;
-                    background: #fff3cd;
-                    padding: 3px 8px;
-                    border-radius: 3px;
-                }
+                .sb-status-badge { padding:3px 8px; border-radius:30px; font-size:11px; font-weight:600; text-transform:uppercase; display:inline-block; }
+                .status-pending { color: #856404; background: #fff3cd; }
+                .status-confirmed { color: #155724; background: #d4edda; }
+                .status-cancelled { color: #721c24; background: #f8d7da; }
+            </style>
+        </div>
+<?php
+    }
 
-                .status-confirmed {
-                    color: #155724;
-                    background: #d4edda;
-                    padding: 3px 8px;
-                    border-radius: 3px;
-                }
+    private static function render_single_booking($id)
+    {
+        $booking = SB_Accommodation_Database::get_booking($id);
 
-                .status-cancelled {
-                    color: #721c24;
-                    background: #f8d7da;
-                    padding: 3px 8px;
-                    border-radius: 3px;
-                }
+        if (! $booking) {
+            echo '<div class="wrap"><div class="notice notice-error"><p>Booking not found.</p></div></div>';
+            return;
+        }
+
+        $room_title = get_the_title($booking->room_type_id);
+?>
+        <div class="wrap">
+            <a href="?page=accommodation_bookings" class="button" style="margin-bottom:20px;">&larr; Back to Bookings</a>
+            <h1>Booking Details #<?php echo $booking->id; ?></h1>
+
+            <div class="sb-booking-details-grid">
+                <div class="sb-detail-card">
+                    <h3>Guest Information</h3>
+                    <p><strong>Name:</strong> <?php echo esc_html($booking->guest_name); ?></p>
+                    <p><strong>Email:</strong> <a href="mailto:<?php echo esc_attr($booking->guest_email); ?>"><?php echo esc_html($booking->guest_email); ?></a></p>
+                    <p><strong>Phone:</strong> <?php echo esc_html($booking->guest_phone ?: 'N/A'); ?></p>
+                </div>
+
+                <div class="sb-detail-card">
+                    <h3>Booking Items</h3>
+                    <p><strong>Room:</strong> <?php echo esc_html($room_title); ?></p>
+                    <p><strong>Check-in:</strong> <?php echo date('F j, Y', strtotime($booking->check_in_date)); ?></p>
+                    <p><strong>Check-out:</strong> <?php echo date('F j, Y', strtotime($booking->check_out_date)); ?></p>
+                    <p><strong>Occupants:</strong> <?php echo intval($booking->occupant_count); ?></p>
+                </div>
+
+                <div class="sb-detail-card">
+                    <h3>Payment & Status</h3>
+                    <p><strong>Status:</strong> <span class="sb-status-badge status-<?php echo esc_attr($booking->booking_status); ?>"><?php echo ucfirst($booking->booking_status); ?></span></p>
+                    <p><strong>Total Amount:</strong> <?php echo esc_html(get_option('sb_currency_symbol', '€') . number_format($booking->total_amount, 2)); ?></p>
+                    <p><strong>Stripe PI:</strong> <code><?php echo esc_html($booking->stripe_pi_id ?: 'N/A'); ?></code></p>
+                    <p><strong>Created:</strong> <?php echo date('Y-m-d H:i', strtotime($booking->created_at)); ?></p>
+                </div>
+            </div>
+
+            <style>
+                .sb-booking-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
+                .sb-detail-card { background: #fff; border: 1px solid #ccd0d4; padding: 20px; border-radius: 4px; }
+                .sb-detail-card h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+                .sb-detail-card p { font-size: 14px; margin: 10px 0; }
+                .sb-status-badge { padding:3px 10px; border-radius:30px; font-size:11px; font-weight:600; text-transform:uppercase; }
+                .status-pending { color: #856404; background: #fff3cd; }
+                .status-confirmed { color: #155724; background: #d4edda; }
             </style>
         </div>
 <?php

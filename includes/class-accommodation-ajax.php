@@ -199,6 +199,11 @@ class SB_Accommodation_Ajax
             wp_send_json_error(['message' => $body['error']['message'] ?? 'Payment error.']);
         }
 
+        // Re-check availability IMMEDIATELY before creating the booking (mitigate race condition)
+        if (! SB_Accommodation_Database::check_availability($room_id, $check_in, $check_out)) {
+            wp_send_json_error(['message' => 'Sorry, dates were just taken. please select other dates.']);
+        }
+
         // Pre-create booking as pending
         $booking_id = SB_Accommodation_Database::create_booking([
             'room_type_id'   => $room_id,
@@ -244,7 +249,7 @@ class SB_Accommodation_Ajax
         }
 
         // Verify payment intent ID matches
-        if ($booking['stripe_pi_id'] !== $pi_id) {
+        if ($booking->stripe_pi_id !== $pi_id) {
             wp_send_json_error(['message' => 'Payment intent mismatch.']);
         }
 
@@ -253,15 +258,15 @@ class SB_Accommodation_Ajax
 
         // Send confirmation email
         wp_mail(
-            $booking['guest_email'],
+            $booking->guest_email,
             'Booking Confirmation',
             sprintf(
                 "Dear %s,\n\nYour booking has been confirmed.\n\nRoom: %s\nCheck-in: %s\nCheck-out: %s\nGuests: %d\n\nThank you!",
-                $booking['guest_name'],
-                get_the_title($booking['room_type_id']),
-                $booking['check_in_date'],
-                $booking['check_out_date'],
-                $booking['occupant_count']
+                $booking->guest_name,
+                get_the_title($booking->room_type_id),
+                $booking->check_in_date,
+                $booking->check_out_date,
+                $booking->occupant_count
             )
         );
 

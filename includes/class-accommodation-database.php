@@ -50,17 +50,18 @@ class SB_Accommodation_Database
         global $wpdb;
         $table = self::get_table();
 
+        // Treat pending bookings older than 30 mins as cancelled
         $conflicts = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$table}
              WHERE room_type_id = %d 
-             AND booking_status != 'cancelled'
              AND (
-                (check_in_date <= %s AND check_out_date > %s)
-                OR (check_in_date < %s AND check_out_date >= %s)
+                booking_status = 'confirmed' 
+                OR (booking_status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE))
+             )
+             AND (
+                check_in_date < %s AND check_out_date > %s
              )",
             $room_id,
-            $check_out,
-            $check_in,
             $check_out,
             $check_in
         ));
@@ -77,8 +78,12 @@ class SB_Accommodation_Database
         $table = self::get_table();
 
         return $wpdb->get_results($wpdb->prepare(
-            "SELECT check_in_date, check_out_date FROM {$table}
-             WHERE room_type_id = %d AND booking_status != 'cancelled'
+            "SELECT check_in_date, check_out_date, booking_status FROM {$table}
+             WHERE room_type_id = %d 
+             AND (
+                booking_status = 'confirmed' 
+                OR (booking_status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE))
+             )
              ORDER BY check_in_date ASC",
             $room_id
         ), ARRAY_A);
@@ -153,7 +158,7 @@ class SB_Accommodation_Database
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$table} WHERE id = %d",
             $booking_id
-        ), ARRAY_A);
+        ));
     }
 
     /**
@@ -177,18 +182,32 @@ class SB_Accommodation_Database
     /**
      * Get all bookings (admin view)
      */
-    public static function get_all_bookings($limit = 100, $offset = 0)
+    public static function get_all_bookings($args = [])
     {
         global $wpdb;
         $table = self::get_table();
 
+        $limit  = intval($args['per_page'] ?? 100);
+        $page   = max(1, intval($args['page'] ?? 1));
+        $offset = ($page - 1) * $limit;
+
         return $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$table}
-             ORDER BY check_in_date DESC
+             ORDER BY created_at DESC
              LIMIT %d OFFSET %d",
             $limit,
             $offset
         ), ARRAY_A);
+    }
+
+    /**
+     * Get total booking count
+     */
+    public static function get_booking_count()
+    {
+        global $wpdb;
+        $table = self::get_table();
+        return (int) $wpdb->get_var("SELECT COUNT(*) FROM {$table}");
     }
 
     /**

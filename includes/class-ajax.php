@@ -131,6 +131,12 @@ class SB_Ajax {
             wp_send_json_error( [ 'message' => $body['error']['message'] ?? 'Payment error.' ] );
         }
 
+        // Re-check availability IMMEDIATELY before creating the pending booking (mitigate race condition)
+        $booked = SB_Database::get_booked_seats( $product_id, $date, $slot_start );
+        if ( $booked + $seats > $total_seats ) {
+            wp_send_json_error( [ 'message' => 'Sorry, the slot just filled up. Please try another time.' ] );
+        }
+
         // Pre-create booking as pending
         $booking_id = SB_Database::create_booking( [
             'product_id'      => $product_id,
@@ -167,6 +173,12 @@ class SB_Ajax {
             wp_send_json_error( [ 'message' => 'Invalid confirmation data.' ] );
         }
 
+        // Check if booking exists and belongs to this payment intent (Fix IDOR)
+        $booking = SB_Database::get_booking( $booking_id );
+        if ( ! $booking || $booking->stripe_pi_id !== $pi_id ) {
+            wp_send_json_error( [ 'message' => 'Invalid booking reference.' ] );
+        }
+
         // Verify with Stripe
         $secret_key = get_option( 'sb_stripe_secret_key', '' );
         $response   = wp_remote_get( "https://api.stripe.com/v1/payment_intents/{$pi_id}", [
@@ -189,7 +201,6 @@ class SB_Ajax {
 
         if ( $booking_status === 'confirmed' ) {
             // Send confirmation email
-            $booking = SB_Database::get_booking( $booking_id );
             if ( $booking ) {
                 self::send_confirmation_email( $booking );
             }
