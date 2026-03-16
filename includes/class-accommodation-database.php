@@ -211,6 +211,17 @@ class SB_Accommodation_Database
     {
         $in  = strtotime($check_in);
         $out = strtotime($check_out);
-        return max(1, intval(floor(($out - $in) / 86400)));
+        // Use round to handle DST changes (some days are 23 or 25 hours)
+        return max(1, intval(round(($out - $in) / 86400)));
+    }
+
+    /**
+     * Delete a booking
+     */
+    public static function delete_booking($booking_id)
+    {
+        global $wpdb;
+        $table = self::get_table();
+        return $wpdb->delete($table, ['id' => absint($booking_id)], ['%d']);
     }
 }

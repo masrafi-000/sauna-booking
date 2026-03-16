@@ -283,15 +283,16 @@ const roomId  = <?php echo $room_id; ?>;
 const roomPrice = <?php echo floatval($price_per_night); ?>;
 const currency = '<?php echo $currency; ?>';
 
+const formatDate = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
 // Calendar State
 let currentMonth = new Date();
-const todayStr = new Date().toISOString().split('T')[0];
-const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
-const tomorrowStr = tomorrow.toISOString().split('T')[0];
+const todayRaw = new Date();
+todayRaw.setHours(0,0,0,0);
+const todayLocal = formatDate(todayRaw);
 
-let checkIn = todayStr; // Default to today
-let checkOut = tomorrowStr; // Default to tomorrow
+let checkIn = null; 
+let checkOut = null; 
 let bookedDates = []; // Format: { date: 'YYYY-MM-DD', status: 'confirmed'|'pending' }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -318,15 +319,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form Submit
     const form = document.getElementById('sb-accommodation-booking-form');
-    form.onsubmit = e => { e.preventDefault(); processBooking(); };
+    if(form) form.onsubmit = e => { e.preventDefault(); processBooking(); };
 });
 
 async function openCalendar() {
     document.getElementById('sbCalendarOverlay').classList.add('active');
     document.body.classList.add('sb-overflow-hidden');
-    
-    // Initial UI state
-    updateSelectionUI();
     
     // Fetch booked dates first
     try {
@@ -342,18 +340,35 @@ async function openCalendar() {
         if(data.success) {
             bookedDates = [];
             data.data.booked_dates.forEach(range => {
-                let start = new Date(range.check_in_date);
-                let end = new Date(range.check_out_date);
-                for(let d = start; d < end; d.setDate(d.getDate() + 1)) {
+                let start = new Date(range.check_in_date + 'T00:00:00');
+                let end = new Date(range.check_out_date + 'T00:00:00');
+                for(let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
                     bookedDates.push({
-                        date: d.toISOString().split('T')[0],
+                        date: formatDate(d),
                         status: range.booking_status
                     });
                 }
             });
         }
     } catch(err) { console.error(err); }
+
+    // Initial default: Find first available day starting from today
+    if (!checkIn) {
+        let temp = new Date(todayRaw);
+        while(bookedDates.some(b => b.date === formatDate(temp))) {
+            temp.setDate(temp.getDate() + 1);
+        }
+        checkIn = formatDate(temp);
+        
+        let out = new Date(temp);
+        out.setDate(out.getDate() + 1);
+        // Tomorrow will be checkout if not booked as a night
+        if (!bookedDates.some(b => b.date === formatDate(temp))) {
+             checkOut = formatDate(out);
+        }
+    }
     
+    updateSelectionUI();
     renderCalendar();
 }
 
@@ -378,7 +393,7 @@ function renderCalendar() {
 
     for (let d = 1; d <= daysInMonth; d++) {
         const dateObj = new Date(year, month, d);
-        const dateStr = dateObj.toISOString().split('T')[0];
+        const dateStr = formatDate(dateObj);
         const isPast = dateObj < today;
         
         const booking = bookedDates.find(b => b.date === dateStr);
@@ -397,20 +412,20 @@ function renderCalendar() {
         const dayEl = document.createElement('div');
         dayEl.className = className;
         dayEl.innerText = d;
-        if(!isPast && !isBooked && !isPending) {
+        
+        if(!isPast) {
             dayEl.onclick = () => handleDateClick(dateStr);
         }
         grid.appendChild(dayEl);
     }
     
-    // Add legend if not exists
     if(!document.querySelector('.sb-cal-legend')) {
         const legend = document.createElement('div');
         legend.className = 'sb-cal-legend';
         legend.innerHTML = `
             <div class="sb-legend-item"><span class="sb-dot dot-available"></span> Available</div>
             <div class="sb-legend-item"><span class="sb-dot dot-pending"></span> Pending</div>
-            <div class="sb-legend-item"><span class="sb-dot dot-booked"></span> Booked</div>
+            <div class="sb-legend-item"><span class="sb-dot dot-booked"></span> Night Occupied</div>
             <div class="sb-legend-item"><span class="sb-dot dot-checkin"></span> Check-in</div>
             <div class="sb-legend-item"><span class="sb-dot dot-checkout"></span> Check-out</div>
         `;
@@ -420,32 +435,39 @@ function renderCalendar() {
 
 function handleDateClick(dateStr) {
     if(!checkIn || (checkIn && checkOut)) {
-        // Reset or Start New
+        // Fresh Start
+        if(bookedDates.some(b => b.date === dateStr)) {
+            alert('This night is already occupied.');
+            return;
+        }
         checkIn = dateStr;
         checkOut = null;
     } else {
-        // Already have Check-in, trying to set Check-out
+        // Trying to set Check-out
         if(dateStr <= checkIn) {
-            // If earlier, reset Check-in to this new earlier date
+            if(bookedDates.some(b => b.date === dateStr)) {
+                alert('This night is already occupied.');
+                return;
+            }
             checkIn = dateStr;
+            checkOut = null;
         } else {
-            // Trying to set Check-out. Verify no blocked dates in between.
+            // Verify no blocked nights in between
             let hasConflict = false;
-            let tempDate = new Date(checkIn);
-            let endDate = new Date(dateStr);
+            let temp = new Date(checkIn + 'T00:00:00');
+            let end = new Date(dateStr + 'T00:00:00');
             
-            while(tempDate < endDate) {
-                let currentStr = tempDate.toISOString().split('T')[0];
+            while(temp < end) {
+                let currentStr = formatDate(temp);
                 if(bookedDates.some(b => b.date === currentStr)) {
                     hasConflict = true;
                     break;
                 }
-                tempDate.setDate(tempDate.getDate() + 1);
+                temp.setDate(temp.getDate() + 1);
             }
             
             if(hasConflict) {
-                alert('Part of this range is unavailable (Booked or Pending).');
-                checkIn = dateStr; // Reset check-in to where they clicked
+                alert('This range contains occupied nights.');
             } else {
                 checkOut = dateStr;
             }
@@ -470,14 +492,17 @@ function updateSelectionUI() {
         btn.disabled = true;
         summary.innerHTML = `<div class="sb-meta-item">Check-in: <strong>${checkIn}</strong></div>`;
     } else {
-        const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+        // Standard "Per Night" Stay: check-out date is the turnover day
+        const diffDays = Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+        const nights = Math.max(1, diffDays);
+        
         label.innerText = 'Dates Selected';
         btn.disabled = false;
         summary.innerHTML = `
             <div style="background:var(--sb-bg-subtle); padding:15px; border-radius:12px; border:1px solid var(--sb-border);">
                 <div class="sb-meta-item">Check-in: <strong>${checkIn}</strong></div>
                 <div class="sb-meta-item">Check-out: <strong>${checkOut}</strong></div>
-                <div class="sb-meta-item">Duration: <strong>${nights} nights</strong></div>
+                <div class="sb-meta-item">Duration: <strong>${nights} night${nights > 1 ? 's' : ''}</strong></div>
                 <div class="sb-card-price" style="margin-top:10px;">
                     <span class="sb-price-amount">${currency}${(nights * roomPrice).toFixed(2)}</span>
                 </div>
@@ -487,7 +512,8 @@ function updateSelectionUI() {
 }
 
 function updateBookingSummary() {
-    const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+    const nights = Math.max(1, diffDays);
     const total = nights * roomPrice;
     
     document.getElementById('sbCheckIn').value = checkIn;

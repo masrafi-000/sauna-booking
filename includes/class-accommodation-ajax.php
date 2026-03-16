@@ -262,23 +262,63 @@ class SB_Accommodation_Ajax
         SB_Accommodation_Database::update_booking_status($booking_id, 'confirmed', 'succeeded');
 
         // Send confirmation email
-        wp_mail(
-            $booking->guest_email,
-            'Booking Confirmation',
-            sprintf(
-                "Dear %s,\n\nYour booking has been confirmed.\n\nRoom: %s\nCheck-in: %s\nCheck-out: %s\nGuests: %d\n\nThank you!",
-                $booking->guest_name,
-                get_the_title($booking->room_type_id),
-                $booking->check_in_date,
-                $booking->check_out_date,
-                $booking->occupant_count
-            )
-        );
+        self::send_confirmation_email($booking);
 
         wp_send_json_success([
             'status'      => 'confirmed',
             'message'     => 'Booking confirmed! Check your email for details.',
             'booking_id'  => $booking_id,
         ]);
+    }
+
+    /**
+     * Send professional confirmation emails to guest and admin
+     */
+    private static function send_confirmation_email($booking)
+    {
+        $room_title = get_the_title($booking->room_type_id);
+        $currency   = get_option('sb_currency_symbol', '€');
+        $site_name  = get_bloginfo('name');
+        $nights     = SB_Accommodation_Database::calculate_nights($booking->check_in_date, $booking->check_out_date);
+
+        $subject = "Booking Confirmed – {$room_title} (" . date('M j', strtotime($booking->check_in_date)) . ")";
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+
+        $message = "
+        <html><body style='font-family:sans-serif;color:#333;line-height:1.6;'>
+        <div style='max-width:600px;margin:20px auto;border:1px solid #eee;padding:30px;border-radius:8px;'>
+            <h2 style='color:#111b19;margin-top:0;'>Your Reservation is Confirmed!</h2>
+            <p>Hi " . esc_html($booking->guest_name) . ",</p>
+            <p>We're excited to host you. Your booking at <strong>" . esc_html($room_title) . "</strong> has been successfully confirmed.</p>
+            
+            <div style='background:#f9fcfb;padding:20px;border-radius:8px;margin:25px 0;'>
+                <table style='width:100%;border-collapse:collapse;'>
+                    <tr><td style='padding:5px 0;color:#666;'>Check-in</td><td style='padding:5px 0;text-align:right;'><strong>" . date('l, F j, Y', strtotime($booking->check_in_date)) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Check-out</td><td style='padding:5px 0;text-align:right;'><strong>" . date('l, F j, Y', strtotime($booking->check_out_date)) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Duration</td><td style='padding:5px 0;text-align:right;'><strong>{$nights} night" . ($nights > 1 ? 's' : '') . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Guests</td><td style='padding:5px 0;text-align:right;'><strong>{$booking->occupant_count}</strong></td></tr>
+                    <tr style='border-top:1px solid #ddd;'><td style='padding:15px 0 0;font-size:18px;'><strong>Total Paid</strong></td><td style='padding:15px 0 0;text-align:right;font-size:18px;color:#111b19;'><strong>{$currency}" . number_format($booking->total_amount, 2) . "</strong></td></tr>
+                </table>
+            </div>
+
+            <p>If you have any questions or need to make changes, please don't hesitate to reach out.</p>
+            <p style='margin-top:30px;border-top:1px solid #eee;padding-top:20px;'>
+                Best regards,<br>
+                <strong>" . esc_html($site_name) . "</strong>
+            </p>
+        </div>
+        </body></html>";
+
+        // To Guest
+        wp_mail($booking->guest_email, $subject, $message, $headers);
+
+        // To Admin
+        $admin_email = get_option('admin_email');
+        wp_mail(
+            $admin_email,
+            "New Accommodation Booking: " . esc_html($room_title) . " – " . esc_html($booking->guest_name),
+            $message,
+            $headers
+        );
     }
 }

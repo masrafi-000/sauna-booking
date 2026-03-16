@@ -43,6 +43,9 @@ class SB_Accommodation_Admin
                 if (in_array($new_status, ['confirmed', 'cancelled', 'pending'])) {
                     SB_Accommodation_Database::update_booking_status($b_id, $new_status);
                     echo '<div class="notice notice-success is-dismissible"><p>Booking status updated to ' . esc_html($new_status) . '.</p></div>';
+                } elseif ($new_status === 'delete') {
+                    SB_Accommodation_Database::delete_booking($b_id);
+                    echo '<div class="notice notice-success is-dismissible"><p>Booking #' . esc_html($b_id) . ' deleted successfully.</p></div>';
                 }
             }
         }
@@ -102,6 +105,7 @@ class SB_Accommodation_Admin
                                     <?php if ($booking['booking_status'] !== 'cancelled') : ?>
                                         <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=cancelled&booking_id=" . $booking['id']), 'acc_admin_action'); ?>" class="button button-small" onclick="return confirm('Cancel this booking?')">Cancel</a>
                                     <?php endif; ?>
+                                    <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=delete&booking_id=" . $booking['id']), 'acc_admin_action'); ?>" class="button button-small" style="color:#a00;" onclick="return confirm('PERMANENTLY DELETE this booking? This cannot be undone.')">Delete</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -181,6 +185,7 @@ class SB_Accommodation_Admin
                         <?php if ($booking->booking_status !== 'cancelled') : ?>
                             <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=cancelled&booking_id=" . $booking->id), 'acc_admin_action'); ?>" class="button button-large" onclick="return confirm('Cancel this booking?')">Cancel Booking</a>
                         <?php endif; ?>
+                        <a href="<?php echo wp_nonce_url(admin_url("edit.php?post_type=accommodation_room&page=accommodation_bookings&action=delete&booking_id=" . $booking->id), 'acc_admin_action'); ?>" class="button button-large" style="color:#a00; border-color:#a00;" onclick="return confirm('PERMANENTLY DELETE this booking? This cannot be undone.')">Delete Booking</a>
                     </div>
                 </div>
             </div>
