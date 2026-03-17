@@ -119,35 +119,38 @@ body.sb-dark-page .entry-content {
    PRODUCT CARD GRID
 ════════════════════════════════════════════════════ */
 .sb-products-grid {
-  display: grid !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
   gap: 24px !important;
   padding: 8px 0 !important;
   box-sizing: border-box !important;
 }
+
+/* Base column widths — items won't grow beyond their defined size */
 .sb-cols-1 {
-  grid-template-columns: 1fr !important;
+  flex: 0 0 100% !important;
 }
 .sb-cols-2 {
-  grid-template-columns: repeat(2, 1fr) !important;
+  flex: 0 0 calc(50% - 12px) !important;
 }
 .sb-cols-3 {
-  grid-template-columns: repeat(3, 1fr) !important;
+  flex: 0 0 calc(33.333% - 16px) !important;
 }
 .sb-cols-4 {
-  grid-template-columns: repeat(4, 1fr) !important;
+  flex: 0 0 calc(25% - 18px) !important;
 }
 
 @media (max-width: 900px) {
   .sb-cols-3,
   .sb-cols-4 {
-    grid-template-columns: repeat(2, 1fr) !important;
+    flex: 0 0 calc(50% - 12px) !important;
   }
 }
 @media (max-width: 560px) {
   .sb-cols-2,
   .sb-cols-3,
   .sb-cols-4 {
-    grid-template-columns: 1fr !important;
+    flex: 0 0 100% !important;
   }
 }
 
