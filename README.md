@@ -70,8 +70,8 @@ Go to **Sauna Products → Settings**:
 |---------|-------------|
 | Stripe Publishable Key | Starts with `pk_live_` or `pk_test_` |
 | Stripe Secret Key | Starts with `sk_live_` or `sk_test_` |
-| Currency Code | e.g., `EUR`, `USD`, `GBP` |
-| Currency Symbol | e.g., `€`, `$`, `£` |
+| Currency Code | e.g., `PHP`, `USD`, `GBP` |
+| Currency Symbol | e.g., `₱`, `$`, `£` |
 
 ---
 

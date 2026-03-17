@@ -65,7 +65,7 @@ class SB_Post_Type {
         </style>
         <div class="sb-mg">
             <div class="sb-mf">
-                <label>Price (<?php echo esc_html(get_option('sb_currency','EUR')); ?>) *</label>
+                <label>Price (<?php echo esc_html(get_option('sb_currency','PHP')); ?>) *</label>
                 <input type="number" step="0.01" name="sb_price" value="<?php echo esc_attr($price); ?>" placeholder="15.95" />
             </div>
             <div class="sb-mf">

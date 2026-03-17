@@ -23,8 +23,8 @@ while (have_posts()) : the_post();
     $faqs            = get_post_meta($room_id, '_sb_faqs',           true);
     if (! is_array($faqs)) $faqs = [];
 
-    $currency        = get_option('sb_currency_symbol', '€');
-    $currency_code   = get_option('sb_currency', 'EUR');
+    $currency        = get_option('sb_currency_symbol', '₱');
+    $currency_code   = get_option('sb_currency', 'PHP');
 
     $gallery_urls = $gallery_raw
         ? array_values(array_filter(array_map('trim', explode("\n", $gallery_raw))))

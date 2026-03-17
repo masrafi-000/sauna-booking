@@ -48,7 +48,7 @@ class SB_Accommodation_Shortcode
                 $room_category     = get_post_meta($id, '_sb_room_category', true);
                 $max_occupants     = get_post_meta($id, '_sb_max_occupants', true) ?: 2;
                 $thumb             = get_the_post_thumbnail_url($id, 'large');
-                $currency          = get_option('sb_currency_symbol', '€');
+                $currency          = get_option('sb_currency_symbol', '₱');
                 $gallery           = get_post_meta($id, '_sb_gallery', true);
 
                 $gallery_urls = $gallery

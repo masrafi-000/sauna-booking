@@ -93,7 +93,7 @@ Optimized with 4 indexes:
 
 Meta fields that admins can set:
 
-- `_sb_price_per_night` (e.g., €80.00)
+- `_sb_price_per_night` (e.g., ₱80.00)
 - `_sb_room_category` (Standard, Deluxe, Premium, Economy)
 - `_sb_max_occupants` (1-4 people, default 2)
 - `_sb_description` (Room description)
@@ -239,8 +239,8 @@ Get keys from Stripe → Add to WordPress options:
 ```php
 update_option('sb_stripe_public_key', 'pk_...');
 update_option('sb_stripe_secret_key', 'sk_...');
-update_option('sb_currency', 'EUR');
-update_option('sb_currency_symbol', '€');
+update_option('sb_currency', 'PHP');
+update_option('sb_currency_symbol', '₱');
 ```
 
 ### Step 3: Create First Room (2 minutes)
@@ -248,7 +248,7 @@ update_option('sb_currency_symbol', '€');
 Admin → Accommodations → Add New:
 
 - Title: "Deluxe Suite"
-- Price: €80/night
+- Price: ₱80/night
 - Category: Deluxe
 - Max guests: 2
 - Publish!

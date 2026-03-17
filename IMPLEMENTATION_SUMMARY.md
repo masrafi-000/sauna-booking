@@ -326,8 +326,8 @@ $tester->run_all_tests();
 
 ```php
 // Must be set before payment will work:
-update_option('sb_currency', 'EUR');
-update_option('sb_currency_symbol', '€');
+update_option('sb_currency', 'PHP');
+update_option('sb_currency_symbol', '₱');
 update_option('sb_stripe_public_key', 'pk_...');
 update_option('sb_stripe_secret_key', 'sk_...');
 

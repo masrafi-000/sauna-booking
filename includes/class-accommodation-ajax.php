@@ -153,7 +153,7 @@ class SB_Accommodation_Ajax
         $nights = SB_Accommodation_Database::calculate_nights($check_in, $check_out);
         $amount = $nights * $price_per_night;
 
-        $currency = strtolower(get_option('sb_currency', 'EUR'));
+        $currency = strtolower(get_option('sb_currency', 'PHP'));
 
         // Get Stripe API key
         $secret_key = get_option('sb_stripe_secret_key', '');
@@ -277,7 +277,7 @@ class SB_Accommodation_Ajax
     private static function send_confirmation_email($booking)
     {
         $room_title = get_the_title($booking->room_type_id);
-        $currency   = get_option('sb_currency_symbol', '€');
+        $currency   = get_option('sb_currency_symbol', '₱');
         $site_name  = get_bloginfo('name');
         $nights     = SB_Accommodation_Database::calculate_nights($booking->check_in_date, $booking->check_out_date);
 

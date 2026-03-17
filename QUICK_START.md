@@ -18,14 +18,14 @@
 Admin → [Sauna Booking Settings Page]
 - Stripe Public Key: pk_...
 - Stripe Secret Key: sk_...
-- Currency: EUR
-- Currency Symbol: €
+- Currency: PHP
+- Currency Symbol: ₱
 
 // Option 2: Direct database/code
 update_option('sb_stripe_public_key', 'pk_...');
 update_option('sb_stripe_secret_key', 'sk_...');
-update_option('sb_currency', 'EUR');
-update_option('sb_currency_symbol', '€');
+update_option('sb_currency', 'PHP');
+update_option('sb_currency_symbol', '₱');
 ```
 
 ### Step 3: Create Your First Room
@@ -278,7 +278,7 @@ wp_mail(
         $booking['check_in_date'],
         $booking['check_out_date'],
         $booking['occupant_count'],
-        get_option('sb_currency_symbol', '€') . number_format($booking['total_amount'], 2),
+        get_option('sb_currency_symbol', '₱') . number_format($booking['total_amount'], 2),
         $booking['id']
     )
 );

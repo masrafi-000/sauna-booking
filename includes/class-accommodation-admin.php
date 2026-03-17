@@ -91,7 +91,7 @@ class SB_Accommodation_Admin
                                     <?php echo date('M j', strtotime($booking['check_in_date'])); ?> - 
                                     <?php echo date('M j, Y', strtotime($booking['check_out_date'])); ?>
                                 </td>
-                                <td><?php echo esc_html(get_option('sb_currency_symbol', '€') . number_format($booking['total_amount'], 2)); ?></td>
+                                <td><?php echo esc_html(get_option('sb_currency_symbol', '₱') . number_format($booking['total_amount'], 2)); ?></td>
                                 <td>
                                     <span class="sb-status-badge status-<?php echo esc_attr($booking['booking_status']); ?>">
                                         <?php echo esc_html(ucfirst($booking['booking_status'])); ?>
@@ -175,7 +175,7 @@ class SB_Accommodation_Admin
                 <div class="sb-detail-card">
                     <h3>Payment & Status</h3>
                     <p><strong>Status:</strong> <span class="sb-status-badge status-<?php echo esc_attr($booking->booking_status); ?>"><?php echo ucfirst($booking->booking_status); ?></span></p>
-                    <p><strong>Total Amount:</strong> <?php echo esc_html(get_option('sb_currency_symbol', '€') . number_format($booking->total_amount, 2)); ?></p>
+                    <p><strong>Total Amount:</strong> <?php echo esc_html(get_option('sb_currency_symbol', '₱') . number_format($booking->total_amount, 2)); ?></p>
                     <p><strong>Stripe PI:</strong> <code><?php echo esc_html($booking->stripe_pi_id ?: 'N/A'); ?></code></p>
                     <p><strong>Created:</strong> <?php echo date('Y-m-d H:i', strtotime($booking->created_at)); ?></p>
                     <div style="margin-top:20px; display:flex; gap:10px;">

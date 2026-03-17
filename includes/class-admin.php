@@ -43,7 +43,7 @@ class SB_Admin {
 
         $products = get_posts( [ 'post_type' => 'sauna_product', 'posts_per_page' => -1, 'post_status' => 'publish' ] );
 
-        $currency = get_option( 'sb_currency_symbol', '€' );
+        $currency = get_option( 'sb_currency_symbol', '₱' );
         ?>
         <div class="wrap sb-admin-wrap">
             <h1 class="wp-heading-inline">Sauna Bookings</h1>

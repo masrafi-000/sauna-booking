@@ -94,7 +94,7 @@ class SB_Ajax {
 
         $price_each = floatval( get_post_meta( $product_id, '_sb_price', true ) ?: 0 );
         $amount     = $price_each * $seats;
-        $currency   = strtolower( get_option( 'sb_currency', 'EUR' ) );
+        $currency   = strtolower( get_option( 'sb_currency', 'PHP' ) );
 
         // Stripe API call
         $secret_key = get_option( 'sb_stripe_secret_key', '' );
@@ -217,7 +217,7 @@ class SB_Ajax {
     /* ── Confirmation email ─────────────────────────────────────────────────── */
     private static function send_confirmation_email( $booking ) {
         $product_title = get_the_title( $booking->product_id );
-        $currency      = get_option( 'sb_currency_symbol', '€' );
+        $currency      = get_option( 'sb_currency_symbol', '₱' );
         $site_name     = get_bloginfo( 'name' );
 
         $subject = "Booking Confirmed – {$product_title}";

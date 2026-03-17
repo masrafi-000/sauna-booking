@@ -174,7 +174,7 @@ function sb_enqueue_assets()
         'ajax_url'        => admin_url('admin-ajax.php'),
         'nonce'           => wp_create_nonce('sb_nonce'),
         'stripe_pub_key'  => get_option('sb_stripe_publishable_key', ''),
-        'currency'        => get_option('sb_currency', 'EUR'),
-        'currency_symbol' => get_option('sb_currency_symbol', '€'),
+        'currency'        => get_option('sb_currency', 'PHP'),
+        'currency_symbol' => get_option('sb_currency_symbol', '₱'),
     ]);
 }

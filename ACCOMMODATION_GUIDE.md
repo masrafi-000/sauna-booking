@@ -203,7 +203,7 @@ Check-out: 2025-06-18
     payment_intent: 'pi_...',
     booking_id: 456,
     amount: 240.00,
-    currency: 'EUR'
+    currency: 'PHP'
   }
 }
 ```
@@ -384,8 +384,8 @@ wp eval-file wp-content/plugins/sauna-booking/tests/test-accommodation.php
 
 These should be set in WordPress options (Admin → Settings):
 
-- `sb_currency` - Currency code (e.g., 'EUR', 'USD')
-- `sb_currency_symbol` - Currency symbol (e.g., '€', '$')
+- `sb_currency` - Currency code (e.g., 'PHP', 'USD')
+- `sb_currency_symbol` - Currency symbol (e.g., '₱', '$')
 - `sb_stripe_public_key` - Stripe Public Key
 - `sb_stripe_secret_key` - Stripe Secret Key
 

@@ -68,7 +68,7 @@ class SB_Accommodation_Post_Type
 
         <div class="sb-mg">
             <div class="sb-mf">
-                <label>Price Per Night (<?php echo esc_html(get_option('sb_currency', 'EUR')); ?>) *</label>
+                <label>Price Per Night (<?php echo esc_html(get_option('sb_currency', 'PHP')); ?>) *</label>
                 <input type="number" step="0.01" name="sb_price_per_night" value="<?php echo esc_attr($price_per_night); ?>" placeholder="80.00" required />
             </div>
 

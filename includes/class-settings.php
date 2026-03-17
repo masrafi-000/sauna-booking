@@ -49,11 +49,11 @@ class SB_Settings {
                     </tr>
                     <tr>
                         <th>Currency Code</th>
-                        <td><input type="text" name="sb_currency" value="<?php echo esc_attr(get_option('sb_currency','EUR')); ?>" class="small-text" placeholder="EUR" /></td>
+                        <td><input type="text" name="sb_currency" value="<?php echo esc_attr(get_option('sb_currency','PHP')); ?>" class="small-text" placeholder="PHP" /></td>
                     </tr>
                     <tr>
                         <th>Currency Symbol</th>
-                        <td><input type="text" name="sb_currency_symbol" value="<?php echo esc_attr(get_option('sb_currency_symbol','€')); ?>" class="small-text" placeholder="€" /></td>
+                        <td><input type="text" name="sb_currency_symbol" value="<?php echo esc_attr(get_option('sb_currency_symbol','₱')); ?>" class="small-text" placeholder="₱" /></td>
                     </tr>
                 </table>
                 <?php submit_button('Save Settings'); ?>

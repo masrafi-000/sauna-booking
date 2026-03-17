@@ -45,7 +45,7 @@ class SB_Shortcode
                 $badge    = get_post_meta($id, '_sb_badge',    true);
                 $location = get_post_meta($id, '_sb_location', true);
                 $thumb    = get_the_post_thumbnail_url($id, 'large');
-                $currency = get_option('sb_currency_symbol', '€');
+                $currency = get_option('sb_currency_symbol', '₱');
             ?>
                 <a class="sb-product-card" href="<?php echo esc_url($link); ?>">
                     <div class="sb-card-image">
@@ -93,7 +93,7 @@ class SB_Shortcode
                             <div class="sb-card-price">
                                 <span class="sb-price-from">From</span>
                                 <span class="sb-price-amount"><?php echo esc_html($currency . number_format((float)$price, 2)); ?>
-                                    <?php echo esc_html(get_option('sb_currency', 'EUR')); ?></span>
+                                    <?php echo esc_html(get_option('sb_currency', 'PHP')); ?></span>
                             </div>
                         <?php endif; ?>
                     </div>
