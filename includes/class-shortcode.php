@@ -12,7 +12,7 @@ class SB_Shortcode
     public static function render($atts)
     {
         $atts = shortcode_atts([
-            'columns'    => 1,
+            'columns'    => 'auto',
             'per_page'   => 9,
             'category'   => '',
             'ids'        => '',
@@ -32,7 +32,8 @@ class SB_Shortcode
             return '<p class="sb-no-products">No sauna products found.</p>';
         }
 
-        $cols = intval($atts['columns']);
+        // Auto columns by card count: 1 card => 1 col, 2 cards => 2 col, 3+ cards => 3 col.
+        $cols = max(1, min(3, intval($products->post_count)));
         ob_start();
 ?>
         <div class="sb-products-grid sb-cols-<?php echo esc_attr($cols); ?>">

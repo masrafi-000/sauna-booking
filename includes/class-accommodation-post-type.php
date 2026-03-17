@@ -53,6 +53,7 @@ class SB_Accommodation_Post_Type
         $price_per_night = get_post_meta($post->ID, '_sb_price_per_night',  true);
         $room_category   = get_post_meta($post->ID, '_sb_room_category',    true);
         $max_occupants   = get_post_meta($post->ID, '_sb_max_occupants',    true) ?: 2;
+        $location        = get_post_meta($post->ID, '_sb_location',         true);
         $amenities       = get_post_meta($post->ID, '_sb_amenities',        true);
         $gallery         = get_post_meta($post->ID, '_sb_gallery',          true);
         $description     = get_post_meta($post->ID, '_sb_description',      true);
@@ -91,6 +92,11 @@ class SB_Accommodation_Post_Type
             <div class="sb-mf">
                 <label>Room Type Display Name</label>
                 <input type="text" name="sb_room_type_name" value="<?php echo esc_attr(get_the_title($post->ID)); ?>" placeholder="e.g., Deluxe Studio" />
+            </div>
+
+            <div class="sb-mf">
+                <label>Location Address (shown on card & detail page)</label>
+                <input type="text" name="sb_location" value="<?php echo esc_attr($location); ?>" placeholder="Upper Cabanagcalaan, Lazi, Siquijor" />
             </div>
 
             <div class="sb-mf sb-mf-full">
@@ -190,6 +196,7 @@ class SB_Accommodation_Post_Type
                 'sb_price_per_night' => 'sanitize_text_field',
                 'sb_room_category'   => 'sanitize_text_field',
                 'sb_max_occupants'   => 'absint',
+                'sb_location'        => 'sanitize_text_field',
                 'sb_gallery'         => 'sanitize_textarea_field',
             ];
             foreach ($fields as $field => $sanitize) {

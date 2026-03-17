@@ -15,7 +15,7 @@ class SB_Accommodation_Shortcode
     public static function render($atts)
     {
         $atts = shortcode_atts([
-            'columns'    => 1,
+            'columns'    => 'auto',
             'per_page'   => 9,
             'ids'        => '',
         ], $atts, 'accommodation_rooms');
@@ -35,7 +35,8 @@ class SB_Accommodation_Shortcode
             return '<p class="sb-no-products">No accommodation rooms found.</p>';
         }
 
-        $cols = intval($atts['columns']);
+        // Auto columns by card count: 1 card => 1 col, 2 cards => 2 col, 3+ cards => 3 col.
+        $cols = max(1, min(3, intval($rooms->post_count)));
         ob_start();
 ?>
         <div class="sb-products-grid sb-cols-<?php echo esc_attr($cols); ?>">
@@ -46,11 +47,15 @@ class SB_Accommodation_Shortcode
                 $price_per_night = get_post_meta($id, '_sb_price_per_night', true);
                 $room_category   = get_post_meta($id, '_sb_room_category', true);
                 $max_occupants   = get_post_meta($id, '_sb_max_occupants', true) ?: 2;
+                $location        = trim((string) get_post_meta($id, '_sb_location', true));
                 $thumb           = get_the_post_thumbnail_url($id, 'large');
                 $currency        = get_option('sb_currency_symbol', '₱');
                 $currency_code   = get_option('sb_currency', 'PHP');
                 $location_info   = get_post_meta($id, '_sb_location_info', true);
-                $location        = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags((string) $location_info)));
+                if ($location === '') {
+                    // Backward-compatible fallback for older rooms that only used location_info.
+                    $location = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags((string) $location_info)));
+                }
                 $gallery         = get_post_meta($id, '_sb_gallery', true);
 
                 $gallery_urls = $gallery
@@ -61,11 +66,8 @@ class SB_Accommodation_Shortcode
                     $thumb = $gallery_urls[0];
                 }
 
-                if (strlen($location) > 32) {
-                    $location = substr($location, 0, 32) . '...';
-                }
             ?>
-                <a class="sb-product-card" href="<?php echo esc_url($link); ?>">
+                <a class="sb-product-card sb-acc-card" href="<?php echo esc_url($link); ?>">
                     <div class="sb-card-image">
                         <?php if ($thumb) : ?>
                             <img src="<?php echo esc_url($thumb); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy" />
@@ -85,7 +87,7 @@ class SB_Accommodation_Shortcode
                     </div>
                     <div class="sb-card-body">
                         <h3 class="sb-card-title"><?php echo esc_html($title); ?></h3>
-                        <div class="sb-card-meta">
+                        <div class="sb-card-meta sb-acc-card-meta">
                             <span class="sb-card-seats">
                                 <svg style="margin-top: 7px;" width="14" height="14" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2">

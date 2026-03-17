@@ -242,7 +242,6 @@ body.sb-dark-page .entry-content {
 }
 .sb-card-meta span {
   display: flex !important;
-
   gap: 4px !important;
 }
 .sb-card-meta span + span::before {
@@ -270,6 +269,41 @@ body.sb-dark-page .entry-content {
   font-size: 18px !important;
   font-weight: 700 !important;
   color: var(--sb-green) !important;
+}
+
+/* Accommodation card: full location + stronger column spacing */
+.sb-acc-card .sb-card-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+.sb-acc-card .sb-card-title {
+  margin: 0 !important;
+}
+.sb-acc-card .sb-acc-card-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+.sb-acc-card .sb-acc-card-meta span {
+  align-items: flex-start !important;
+  gap: 6px !important;
+  line-height: 1.35 !important;
+}
+.sb-acc-card .sb-card-location {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+.sb-acc-card .sb-card-location svg {
+  flex: 0 0 auto !important;
+  margin-top: 2px !important;
+}
+.sb-acc-card .sb-card-price {
+  margin-top: 2px !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
 }
 
 /* ════════════════════════════════════════════════════
@@ -1327,6 +1361,17 @@ body.sb-overflow-hidden {
    RESPONSIVE
 ════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
+  .sb-acc-card .sb-card-body {
+    padding: 14px 14px 16px !important;
+    gap: 8px !important;
+  }
+  .sb-acc-card .sb-acc-card-meta {
+    gap: 6px !important;
+  }
+  .sb-acc-card .sb-card-price {
+    column-gap: 6px !important;
+    row-gap: 2px !important;
+  }
   .sb-popup-calendar {
     padding: 20px 18px 24px !important;
   }

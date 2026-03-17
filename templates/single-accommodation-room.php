@@ -16,6 +16,7 @@ while (have_posts()) : the_post();
     $price_per_night = get_post_meta($room_id, '_sb_price_per_night', true);
     $room_category   = get_post_meta($room_id, '_sb_room_category',   true);
     $max_occupants   = get_post_meta($room_id, '_sb_max_occupants',   true) ?: 2;
+    $location        = trim((string) get_post_meta($room_id, '_sb_location', true));
     $gallery_raw     = get_post_meta($room_id, '_sb_gallery',         true);
     $about           = get_post_meta($room_id, '_sb_about',           true);
     $important       = get_post_meta($room_id, '_sb_important_info', true);
@@ -33,6 +34,11 @@ while (have_posts()) : the_post();
     $main_image = get_the_post_thumbnail_url($room_id, 'full');
     if (! $main_image && ! empty($gallery_urls)) {
         $main_image = $gallery_urls[0];
+    }
+
+    if ($location === '') {
+        // Backward-compatible fallback for older rooms that only used location_info.
+        $location = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags((string) $location_info)));
     }
 
     $all_thumbs = [];
@@ -70,12 +76,35 @@ while (have_posts()) : the_post();
         <!-- RIGHT: Details & Booking -->
         <div class="sb-product-details">
             <h1 class="sb-detail-title"><?php echo esc_html($title); ?></h1>
-            <p class="sb-detail-price"><?php echo esc_html($room_category); ?> • Up to <strong><?php echo esc_html($max_occupants); ?> guests</strong></p>
+            <p class="sb-detail-price"><?php echo esc_html($room_category); ?></p>
 
             <div class="sb-card-price" style="margin-bottom: 30px;">
                 <span class="sb-price-amount"><?php echo esc_html($currency . number_format((float)$price_per_night, 2)); ?></span>
                 <span class="sb-price-period">/ night</span>
             </div>
+
+            <div class="sb-detail-meta">
+                <span class="sb-meta-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <?php echo esc_html($max_occupants); ?> guests
+                </span>
+                <?php if ($location) : ?>
+                    <span class="sb-meta-item">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <?php echo esc_html($location); ?>
+                    </span>
+                <?php endif; ?>
+            </div>
+
+            <hr class="sb-divider" />
 
             <!-- Booking Selection CTA -->
             <div class="sb-booking-cta" style="margin-bottom: 40px;">
