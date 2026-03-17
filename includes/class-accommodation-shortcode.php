@@ -15,7 +15,7 @@ class SB_Accommodation_Shortcode
     public static function render($atts)
     {
         $atts = shortcode_atts([
-            'columns'    => 3,
+            'columns'    => 1,
             'per_page'   => 9,
             'ids'        => '',
         ], $atts, 'accommodation_rooms');
