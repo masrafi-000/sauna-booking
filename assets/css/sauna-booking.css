@@ -792,8 +792,8 @@ body.sb-overflow-hidden {
   display: flex !important;
   align-items: center !important;
   gap: 5px !important;
-  font-size: 11px !important;
-  color: var(--sb-text-faint) !important;
+  font-size: 14px !important;
+  color: #111b19 !important;
   margin: 0 0 24px !important;
   font-weight: 500 !important;
 }
