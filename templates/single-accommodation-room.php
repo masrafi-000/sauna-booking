@@ -79,6 +79,7 @@ while (have_posts()) : the_post();
             <p class="sb-detail-price"><?php echo esc_html($room_category); ?></p>
 
             <div class="sb-card-price" style="margin-bottom: 30px;">
+                <span class="sb-price-from">Price:</span>
                 <span class="sb-price-amount"><?php echo esc_html($currency . number_format((float)$price_per_night, 2)); ?></span>
                 <span class="sb-price-period">/ night</span>
             </div>

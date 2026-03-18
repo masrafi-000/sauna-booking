@@ -117,18 +117,18 @@ while (have_posts()) : the_post();
 
             <?php if ($price) : ?>
             <div class="sb-detail-price">
-                From
+                Price:
                 <strong><?php echo esc_html($currency . number_format((float)$price, 2, '.', '') . ' ' . $currency_code); ?></strong>
                 per person
             </div>
             <?php endif; ?>
 
             <!-- Booking type pill tabs -->
-            <div class="sb-booking-types">
+            <!-- <div class="sb-booking-types">
                 <button class="sb-type-btn active" data-type="early_bird">Early Bird</button>
                 <button class="sb-type-btn" data-type="off_peak">Off Peak</button>
                 <button class="sb-type-btn" data-type="peak">Peak</button>
-            </div>
+            </div> -->
 
             <!-- CTA button -->
             <button class="sb-select-time-btn" id="sbOpenCalendar">Select a Time</button>
@@ -335,21 +335,22 @@ while (have_posts()) : the_post();
     <div class="sb-popup sb-popup-calendar">
         <button class="sb-popup-close" id="sbCloseCalendar" aria-label="Close">&times;</button>
 
-        <div class="sb-popup-select-wrap">
+        <!-- <div class="sb-popup-select-wrap">
             <select class="sb-popup-type-select" id="sbTypeSelect">
                 <option value="early_bird">Early Bird</option>
                 <option value="off_peak">Off Peak</option>
                 <option value="peak">Peak</option>
             </select>
-        </div>
+        </div> -->
 
-        <h2 class="sb-popup-title">Select a time for <?php echo esc_html($title); ?></h2>
+        <!-- <h2 class="sb-popup-title">Select a time for <?php echo esc_html($title); ?></h2> -->
+
         <p class="sb-popup-tz">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
             </svg>
-            Timezone: Europe/Dublin
+            Timezone: Philippine Standard Time
         </p>
 
         <div class="sb-popup-body">
