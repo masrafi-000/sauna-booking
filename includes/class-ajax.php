@@ -242,13 +242,26 @@ class SB_Ajax {
         wp_mail( $booking->email, $subject, $message, $headers );
 
         // Notify admin
-        $admin_email = get_option('admin_email');
-        wp_mail(
-            $admin_email,
-            "New Booking: {$product_title} – {$booking->first_name} {$booking->last_name}",
-            $message,
-            $headers
-        );
+        $admin_email = get_option('sb_admin_email') ?: get_option('admin_email');
+        $admin_subject = "New Sauna Booking: {$product_title} – {$booking->first_name} {$booking->last_name}";
+        $admin_message = "
+        <html><body style='font-family:sans-serif;color:#333;'>
+        <h2 style='color:#c97d30;'>New Booking Received</h2>
+        <p>A new sauna booking has been confirmed. Details below:</p>
+        <table style='border-collapse:collapse;width:100%;max-width:500px;'>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Customer</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>{$booking->first_name} {$booking->last_name}</td></tr>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Email</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>{$booking->email}</td></tr>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Phone</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>{$booking->phone}</td></tr>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Sauna</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>{$product_title}</td></tr>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Date</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>" . date('l, F j, Y', strtotime($booking->booking_date)) . "</td></tr>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Time</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>{$booking->time_slot_start} – {$booking->time_slot_end}</td></tr>
+            <tr><td style='padding:8px;border-bottom:1px solid #eee;'><strong>Seats</strong></td><td style='padding:8px;border-bottom:1px solid #eee;'>{$booking->seats_booked}</td></tr>
+            <tr><td style='padding:8px;'><strong>Amount Paid</strong></td><td style='padding:8px;'>{$currency}{$booking->amount}</td></tr>
+        </table>
+        <p style='margin-top:24px;color:#666;font-size:13px;'>This is an automated notification from {$site_name}.</p>
+        </body></html>";
+
+        wp_mail( $admin_email, $admin_subject, $admin_message, $headers );
     }
 
     /* ── Helpers ─────────────────────────────────────────────────────────────── */

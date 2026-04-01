@@ -25,10 +25,13 @@ class SB_Settings {
             'sb_stripe_secret_key',
             'sb_currency',
             'sb_currency_symbol',
+            'sb_admin_email',
         ];
         foreach ( $options as $opt ) {
             register_setting( 'sb_settings_group', $opt, 'sanitize_text_field' );
         }
+        // Admin email uses sanitize_email instead
+        register_setting( 'sb_settings_group', 'sb_admin_email', 'sanitize_email' );
     }
 
     public static function render_page() {
@@ -54,6 +57,13 @@ class SB_Settings {
                     <tr>
                         <th>Currency Symbol</th>
                         <td><input type="text" name="sb_currency_symbol" value="<?php echo esc_attr(get_option('sb_currency_symbol','₱')); ?>" class="small-text" placeholder="₱" /></td>
+                    </tr>
+                    <tr>
+                        <th>Admin Notification Email</th>
+                        <td>
+                            <input type="email" name="sb_admin_email" value="<?php echo esc_attr(get_option('sb_admin_email','')); ?>" class="regular-text" placeholder="<?php echo esc_attr(get_option('admin_email')); ?>" />
+                            <p class="description">Booking confirmation notifications will be sent to this address. Leave blank to use the default WordPress admin email (<code><?php echo esc_html(get_option('admin_email')); ?></code>).</p>
+                        </td>
                     </tr>
                 </table>
                 <?php submit_button('Save Settings'); ?>

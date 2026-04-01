@@ -312,13 +312,35 @@ class SB_Accommodation_Ajax
         // To Guest
         wp_mail($booking->guest_email, $subject, $message, $headers);
 
-        // To Admin
-        $admin_email = get_option('admin_email');
-        wp_mail(
-            $admin_email,
-            "New Accommodation Booking: " . esc_html($room_title) . " – " . esc_html($booking->guest_name),
-            $message,
-            $headers
-        );
+        // To Admin – separate notification email with guest contact details
+        $admin_email   = get_option('sb_admin_email') ?: get_option('admin_email');
+        $admin_subject = "New Accommodation Booking: " . esc_html($room_title) . " – " . esc_html($booking->guest_name);
+        $admin_message = "
+        <html><body style='font-family:sans-serif;color:#333;line-height:1.6;'>
+        <div style='max-width:600px;margin:20px auto;border:1px solid #eee;padding:30px;border-radius:8px;'>
+            <h2 style='color:#111b19;margin-top:0;'>New Accommodation Booking</h2>
+            <p>A new reservation has been confirmed. Details below:</p>
+
+            <div style='background:#f9fcfb;padding:20px;border-radius:8px;margin:25px 0;'>
+                <table style='width:100%;border-collapse:collapse;'>
+                    <tr><td style='padding:5px 0;color:#666;'>Guest</td><td style='padding:5px 0;text-align:right;'><strong>" . esc_html($booking->guest_name) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Email</td><td style='padding:5px 0;text-align:right;'><strong>" . esc_html($booking->guest_email) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Phone</td><td style='padding:5px 0;text-align:right;'><strong>" . esc_html($booking->guest_phone) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Room</td><td style='padding:5px 0;text-align:right;'><strong>" . esc_html($room_title) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Check-in</td><td style='padding:5px 0;text-align:right;'><strong>" . date('l, F j, Y', strtotime($booking->check_in_date)) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Check-out</td><td style='padding:5px 0;text-align:right;'><strong>" . date('l, F j, Y', strtotime($booking->check_out_date)) . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Duration</td><td style='padding:5px 0;text-align:right;'><strong>{$nights} night" . ($nights > 1 ? 's' : '') . "</strong></td></tr>
+                    <tr><td style='padding:5px 0;color:#666;'>Guests</td><td style='padding:5px 0;text-align:right;'><strong>{$booking->occupant_count}</strong></td></tr>
+                    <tr style='border-top:1px solid #ddd;'><td style='padding:15px 0 0;font-size:18px;'><strong>Total Paid</strong></td><td style='padding:15px 0 0;text-align:right;font-size:18px;color:#111b19;'><strong>{$currency}" . number_format($booking->total_amount, 2) . "</strong></td></tr>
+                </table>
+            </div>
+
+            <p style='margin-top:30px;border-top:1px solid #eee;padding-top:20px;color:#666;font-size:13px;'>
+                This is an automated notification from <strong>" . esc_html($site_name) . "</strong>.
+            </p>
+        </div>
+        </body></html>";
+
+        wp_mail($admin_email, $admin_subject, $admin_message, $headers);
     }
 }
