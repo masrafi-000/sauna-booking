@@ -59,7 +59,7 @@ class SB_Settings {
                         <td><input type="text" name="sb_currency_symbol" value="<?php echo esc_attr(get_option('sb_currency_symbol','₱')); ?>" class="small-text" placeholder="₱" /></td>
                     </tr>
                     <tr>
-                        <th>Admin Notification Email</th>
+                        <th>Admin Email</th>
                         <td>
                             <input type="email" name="sb_admin_email" value="<?php echo esc_attr(get_option('sb_admin_email','')); ?>" class="regular-text" placeholder="<?php echo esc_attr(get_option('admin_email')); ?>" />
                             <p class="description">Booking confirmation notifications will be sent to this address. Leave blank to use the default WordPress admin email (<code><?php echo esc_html(get_option('admin_email')); ?></code>).</p>
